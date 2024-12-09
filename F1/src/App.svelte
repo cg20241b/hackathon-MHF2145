@@ -8,7 +8,12 @@
 
 	onMount(() => {
 		const scene = new THREE.Scene();
-		const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+		const camera = new THREE.PerspectiveCamera(
+			75,
+			window.innerWidth / window.innerHeight,
+			0.1,
+			1000,
+		);
 		camera.position.z = 5;
 
 		const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
@@ -20,15 +25,19 @@
 			"https://threejs.org/examples/fonts/gentilis_regular.typeface.json",
 			(font) => {
 				// Metal-like Shader for the Alphabet: Reflective (swapped)
+				// Metal-like Shader for the Digit: Reflective (updated)
+				// Reflective light dispersing for the Digit: Reflective with light spread
 				const createMetalMaterial = (baseColor) =>
-    new THREE.ShaderMaterial({
-        uniforms: {
-            cubePosition: { value: new THREE.Vector3(0, 0, 0) },
-            ambientIntensity: { value: 0.361 },
-            lightPosition: { value: new THREE.Vector3(0, 0, 0) },
-            viewPosition: { value: camera.position },
-        },
-        vertexShader: `
+					new THREE.ShaderMaterial({
+						uniforms: {
+							cubePosition: { value: new THREE.Vector3(0, 0, 0) },
+							ambientIntensity: { value: 0.361 },
+							lightPosition: {
+								value: new THREE.Vector3(0, 0, 0),
+							},
+							viewPosition: { value: camera.position },
+						},
+						vertexShader: `
             varying vec3 vNormal;
             varying vec3 vPosition;
             void main() {
@@ -37,39 +46,36 @@
                 gl_Position = projectionMatrix * viewMatrix * vec4(vPosition, 1.0);
             }
         `,
-        fragmentShader: `
-            uniform vec3 cubePosition;
-            uniform float ambientIntensity;
-            uniform vec3 lightPosition;
-            uniform vec3 viewPosition;
-            varying vec3 vNormal;
-            varying vec3 vPosition;
+						fragmentShader: `
+  uniform vec3 cubePosition;
+  uniform float ambientIntensity;
+  uniform vec3 lightPosition;
+  uniform vec3 viewPosition;
+  varying vec3 vNormal;
+  varying vec3 vPosition;
 
-            void main() {
-                vec3 lightDir = normalize(lightPosition - vPosition);
-                vec3 viewDir = normalize(viewPosition - vPosition);
-                vec3 reflectDir = reflect(-lightDir, normalize(vNormal));
+  void main() {
+      vec3 lightDir = normalize(lightPosition - vPosition);
+      vec3 viewDir = normalize(viewPosition - vPosition);
+      vec3 reflectDir = reflect(-lightDir, normalize(vNormal));
 
-                // Ambient
-                vec3 ambient = vec3(${baseColor}) * ambientIntensity;
+      vec3 ambient = vec3(${baseColor}) * ambientIntensity;
 
-                // Diffuse with distance attenuation
-                float distance = length(cubePosition - vPosition);
-                float attenuation = 1.0 / (distance * distance + 1.0); // Standard attenuation
-                float diff = max(dot(normalize(vNormal), lightDir), 0.0);
-                vec3 diffuse = diff * vec3(${baseColor}) * attenuation;
+      float distance = length(cubePosition - vPosition);
+      float attenuation = 1.0 / (distance * distance + 1.0);
+      attenuation *= 1.5;
+      float diff = max(dot(normalize(vNormal), lightDir), 0.0);
+      vec3 diffuse = diff * vec3(${baseColor}) * attenuation;
 
-                // Specular (Metal-like reflection)
-                float shininess = 300.0; // High shininess for metal appearance
-                float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
-                vec3 specular = vec3(${baseColor}) * spec * 1.2 * attenuation; // Enhanced specular with base color
+      float shininess = 50.0;
+      float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+      vec3 specular = vec3(1.0) * spec * attenuation;
 
-                // Final color
-                vec3 color = ambient + diffuse + specular;
-                gl_FragColor = vec4(color, 1.0);
-            }
-        `,
-    });
+      vec3 color = ambient + diffuse + specular;
+      gl_FragColor = vec4(color, 1.0);
+  }
+`,
+					});
 
 				// Plastic-like Shader for the Digit: Lustrous (swapped)
 				const createPlasticMaterial = (baseColor) =>
@@ -77,7 +83,9 @@
 						uniforms: {
 							cubePosition: { value: new THREE.Vector3(0, 0, 0) },
 							ambientIntensity: { value: 0.361 },
-							lightPosition: { value: new THREE.Vector3(0, 0, 0) },
+							lightPosition: {
+								value: new THREE.Vector3(0, 0, 0),
+							},
 							viewPosition: { value: camera.position },
 						},
 						vertexShader: `
@@ -90,51 +98,50 @@
 							}
 						`,
 						fragmentShader: `
-							uniform vec3 cubePosition;
-							uniform float ambientIntensity;
-							uniform vec3 lightPosition;
-							uniform vec3 viewPosition;
-							varying vec3 vNormal;
-							varying vec3 vPosition;
+  uniform vec3 cubePosition;
+  uniform float ambientIntensity;
+  uniform vec3 lightPosition;
+  uniform vec3 viewPosition;
+  varying vec3 vNormal;
+  varying vec3 vPosition;
 
-							void main() {
-								vec3 lightDir = normalize(lightPosition - vPosition);
-								vec3 viewDir = normalize(viewPosition - vPosition);
-								vec3 reflectDir = reflect(-lightDir, normalize(vNormal));
+  void main() {
+      float ambient = 0.200 * ambientIntensity;
 
-								// Ambient
-								vec3 ambient = vec3(${baseColor}) * ambientIntensity;
+      vec3 lightDir = normalize(lightPosition - vPosition);
+      float distance = length(lightPosition - vPosition);
+      float attenuation = 1.0 / (distance * distance + 1.0);
+      float diffuse = max(dot(vNormal, lightDir), 0.0) * attenuation;
 
-								// Diffuse with distance attenuation, dispersing light over a larger area
-								float distance = length(cubePosition - vPosition);
-								float attenuation = 1.0 / (distance * distance + 1.0); // Standard attenuation
-								attenuation *= 1.5; // Increase light spread by 1.5x
-								float diff = max(dot(normalize(vNormal), lightDir), 0.0);
-								vec3 diffuse = diff * vec3(${baseColor}) * attenuation;
+      vec3 viewDir = normalize(viewPosition - vPosition);
+      vec3 reflectDir = reflect(-lightDir, vNormal);
+      float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64.0);
+      float specular = spec * attenuation;
 
-								// Specular (Lustrous, shiny yet soft appearance)
-								float shininess = 50.0; // Moderate shininess for plastic-like highlight
-								float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
-								vec3 specular = vec3(1.0) * spec * attenuation; // White specular for lustrous effect
-
-								// Final color
-								vec3 color = ambient + diffuse + specular;
-								gl_FragColor = vec4(color, 1.0);
-							}
-						`,
+      vec3 color = vec3(${baseColor});
+      vec3 totalColor = color * (ambient + diffuse) + vec3(1.0) * specular;
+      gl_FragColor = vec4(totalColor, 1.0);
+  }
+`,
 					});
 
-				const alphabetMaterial = createMetalMaterial("0.847, 0.616, 0.553"); // #d89d8d
+				const alphabetMaterial =
+					createPlasticMaterial("0.553, 0.847, 0.8"); // ##8dd8cc Riptide
 				const alphabetGeometry = new TextGeometry("F", {
 					font: font,
 					size: 2.5,
 					height: 0.2,
 				});
-				const alphabetMesh = new THREE.Mesh(alphabetGeometry, alphabetMaterial);
+				const alphabetMesh = new THREE.Mesh(
+					alphabetGeometry,
+					alphabetMaterial,
+				);
 				alphabetMesh.position.set(-3, -1, 0); // Left side
 				scene.add(alphabetMesh);
 
-				const digitMaterial = createPlasticMaterial("0.553, 0.847, 0.8"); // #8dd8cc
+				const digitMaterial = createMetalMaterial(
+					"0.847, 0.616, 0.553",
+				); // #d89d8d complement riptide
 				const digitGeometry = new TextGeometry("1", {
 					font: font,
 					size: 2.5,
@@ -145,12 +152,20 @@
 				scene.add(digitMesh);
 
 				renderLoopMaterials.push(() => {
-					alphabetMaterial.uniforms.cubePosition.value.copy(cube.position);
-					alphabetMaterial.uniforms.lightPosition.value.copy(cube.position);
-					digitMaterial.uniforms.cubePosition.value.copy(cube.position);
-					digitMaterial.uniforms.lightPosition.value.copy(cube.position);
+					alphabetMaterial.uniforms.cubePosition.value.copy(
+						cube.position,
+					);
+					alphabetMaterial.uniforms.lightPosition.value.copy(
+						cube.position,
+					);
+					digitMaterial.uniforms.cubePosition.value.copy(
+						cube.position,
+					);
+					digitMaterial.uniforms.lightPosition.value.copy(
+						cube.position,
+					);
 				});
-			}
+			},
 		);
 
 		const cubeGeometry = new THREE.BoxGeometry(0.3, 0.3, 0.1);
@@ -237,7 +252,6 @@
 		});
 	});
 </script>
-
 
 <main>
 	<canvas bind:this={canvas}></canvas>
