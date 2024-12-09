@@ -14,41 +14,125 @@
 		const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
 		renderer.setSize(window.innerWidth, window.innerHeight);
 
+<<<<<<< HEAD
 		// Add ambient light for overall illumination
 		const ambientLight = new THREE.AmbientLight(0xffffff, 0.361);
 		scene.add(ambientLight);
 
+=======
+>>>>>>> c5a5bc9 (Patch 1.0.2)
 		// Load font and create text meshes
 		const fontLoader = new FontLoader();
 		fontLoader.load(
-			"https://threejs.org/examples/fonts/helvetiker_regular.typeface.json",
+			"https://threejs.org/examples/fonts/gentilis_regular.typeface.json",
 			(font) => {
-				// Create ShaderMaterial for glowing effect
-				const createMaterial = (baseColor) =>
-					new THREE.ShaderMaterial({
-						uniforms: {
-							cubePosition: { value: new THREE.Vector3(0, 0, 0) },
-						},
-						vertexShader: `
-							varying vec3 vPosition;
-							void main() {
-								vPosition = (modelMatrix * vec4(position, 1.0)).xyz;
-								gl_Position = projectionMatrix * viewMatrix * vec4(vPosition, 1.0);
-							}
-						`,
-						fragmentShader: `
-							uniform vec3 cubePosition;
-							varying vec3 vPosition;
-							void main() {
-								float distance = length(cubePosition - vPosition);
-								float brightness = 1.0 / (distance * distance + 1.0);
-								vec3 glowColor = vec3(${baseColor}) * brightness;
-								gl_FragColor = vec4(glowColor, 1.0);
-							}
-						`,
-					});
+				// Plastic-like Shader for the Alphabet: Lustrous
+			const createPlasticMaterial = (baseColor) =>
+				new THREE.ShaderMaterial({
+					uniforms: {
+						cubePosition: { value: new THREE.Vector3(0, 0, 0) },
+						ambientIntensity: { value: 0.361 },
+						lightPosition: { value: new THREE.Vector3(0, 0, 0) },
+						viewPosition: { value: camera.position },
+					},
+					vertexShader: `
+						varying vec3 vNormal;
+						varying vec3 vPosition;
+						void main() {
+							vPosition = (modelMatrix * vec4(position, 1.0)).xyz;
+							vNormal = normalize(normalMatrix * normal); // Normalize the normals
+							gl_Position = projectionMatrix * viewMatrix * vec4(vPosition, 1.0);
+						}
+					`,
+					fragmentShader: `
+						uniform vec3 cubePosition;
+						uniform float ambientIntensity;
+						uniform vec3 lightPosition;
+						uniform vec3 viewPosition;
+						varying vec3 vNormal;
+						varying vec3 vPosition;
 
-				const alphabetMaterial = createMaterial("0.553, 0.847, 0.8"); // #8dd8cc
+						void main() {
+							vec3 lightDir = normalize(lightPosition - vPosition);
+							vec3 viewDir = normalize(viewPosition - vPosition);
+							vec3 reflectDir = reflect(-lightDir, normalize(vNormal));
+
+							// Ambient
+							vec3 ambient = vec3(${baseColor}) * ambientIntensity;
+
+							// Diffuse with distance attenuation, dispersing light over a larger area
+							float distance = length(cubePosition - vPosition);
+							float attenuation = 1.0 / (distance * distance + 1.0); // Standard attenuation
+							attenuation *= 1.5; // Increase light spread by 1.5x
+							float diff = max(dot(normalize(vNormal), lightDir), 0.0);
+							vec3 diffuse = diff * vec3(${baseColor}) * attenuation;
+
+							// Specular (Lustrous, shiny yet soft appearance)
+							float shininess = 50.0; // Moderate shininess for plastic-like highlight
+							float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+							vec3 specular = vec3(1.0) * spec * attenuation; // White specular for lustrous effect
+
+							// Final color
+							vec3 color = ambient + diffuse + specular;
+							gl_FragColor = vec4(color, 1.0);
+						}
+					`,
+				});
+
+				// Metal-like Shader for the Digit: Reflective
+				const createMetalMaterial = (baseColor) =>
+    new THREE.ShaderMaterial({
+        uniforms: {
+            cubePosition: { value: new THREE.Vector3(0, 0, 0) },
+            ambientIntensity: { value: 0.361 },
+            lightPosition: { value: new THREE.Vector3(0, 0, 0) },
+            viewPosition: { value: camera.position },
+        },
+        vertexShader: `
+            varying vec3 vNormal;
+            varying vec3 vPosition;
+            void main() {
+                vPosition = (modelMatrix * vec4(position, 1.0)).xyz;
+                vNormal = normalize(normalMatrix * normal); // Normalize the normals
+                gl_Position = projectionMatrix * viewMatrix * vec4(vPosition, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform vec3 cubePosition;
+            uniform float ambientIntensity;
+            uniform vec3 lightPosition;
+            uniform vec3 viewPosition;
+            varying vec3 vNormal;
+            varying vec3 vPosition;
+
+            void main() {
+                vec3 lightDir = normalize(lightPosition - vPosition);
+                vec3 viewDir = normalize(viewPosition - vPosition);
+                vec3 reflectDir = reflect(-lightDir, normalize(vNormal));
+
+                // Ambient
+                vec3 ambient = vec3(${baseColor}) * ambientIntensity;
+
+                // Diffuse with distance attenuation
+                float distance = length(cubePosition - vPosition);
+                float attenuation = 1.0 / (distance * distance + 1.0); // Standard attenuation
+                float diff = max(dot(normalize(vNormal), lightDir), 0.0);
+                vec3 diffuse = diff * vec3(${baseColor}) * attenuation;
+
+                // Specular (Metal-like reflection)
+                float shininess = 300.0; // High shininess for metal appearance
+                float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+                vec3 specular = vec3(${baseColor}) * spec * 1.2 * attenuation; // Enhanced specular with base color
+
+                // Final color
+                vec3 color = ambient + diffuse + specular;
+                gl_FragColor = vec4(color, 1.0);
+            }
+        `,
+    });
+
+
+				const alphabetMaterial = createPlasticMaterial("0.553, 0.847, 0.8"); // #8dd8cc
 				const alphabetGeometry = new TextGeometry("F", {
 					font: font,
 					size: 2.5,
@@ -58,7 +142,7 @@
 				alphabetMesh.position.set(-3, -1, 0); // Left side
 				scene.add(alphabetMesh);
 
-				const digitMaterial = createMaterial("0.847, 0.616, 0.553"); // #d89d8d
+				const digitMaterial = createMetalMaterial("0.847, 0.616, 0.553"); // #d89d8d
 				const digitGeometry = new TextGeometry("1", {
 					font: font,
 					size: 2.5,
@@ -70,12 +154,14 @@
 
 				renderLoopMaterials.push(() => {
 					alphabetMaterial.uniforms.cubePosition.value.copy(cube.position);
+					alphabetMaterial.uniforms.lightPosition.value.copy(cube.position);
 					digitMaterial.uniforms.cubePosition.value.copy(cube.position);
+					digitMaterial.uniforms.lightPosition.value.copy(cube.position);
 				});
 			}
 		);
 
-		const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+		const cubeGeometry = new THREE.BoxGeometry(0.3, 0.3, 0.1);
 		const glowMaterial = new THREE.ShaderMaterial({
 			uniforms: {
 				time: { value: 0.0 },
@@ -117,16 +203,16 @@
 					cube.position.x += 0.1; // Move cube right
 					break;
 				case "a":
-					camera.position.x -= 0.1; // Move camera left
+					camera.position.x += 0.1; // Move camera left
 					break;
 				case "d":
-					camera.position.x += 0.1; // Move camera right
+					camera.position.x -= 0.1; // Move camera right
 					break;
 				case "r":
-					camera.position.y += 0.1; // Move camera up
+					camera.position.y -= 0.1; // Move camera up
 					break;
 				case "f":
-					camera.position.y -= 0.1; // Move camera down
+					camera.position.y += 0.1; // Move camera down
 					break;
 			}
 		};
@@ -160,5 +246,4 @@
 		width: 100%;
 		height: 100%;
 	}
-	
 </style>
