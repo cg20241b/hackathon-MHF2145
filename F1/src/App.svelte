@@ -14,13 +14,6 @@
 		const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
 		renderer.setSize(window.innerWidth, window.innerHeight);
 
-<<<<<<< HEAD
-		// Add ambient light for overall illumination
-		const ambientLight = new THREE.AmbientLight(0xffffff, 0.361);
-		scene.add(ambientLight);
-
-=======
->>>>>>> c5a5bc9 (Patch 1.0.2)
 		// Load font and create text meshes
 		const fontLoader = new FontLoader();
 		fontLoader.load(
