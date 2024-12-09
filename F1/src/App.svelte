@@ -15,7 +15,7 @@
 		renderer.setSize(window.innerWidth, window.innerHeight);
 
 		// Add ambient light for overall illumination
-		const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+		const ambientLight = new THREE.AmbientLight(0xffffff, 0.361);
 		scene.add(ambientLight);
 
 		// Load font and create text meshes
