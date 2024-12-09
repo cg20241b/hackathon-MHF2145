@@ -234,3 +234,156 @@ To track progress and highlight improvements since Patch 1.0.0, let's analyze th
 ---
 
 *This progress note is made by GPT-4.o.*
+
+---
+
+## **Patch 2.0.0**
+
+This release introduces major visual and functional upgrades, including improvements to the shading system, interactivity, and the glowing globe effect.
+
+---
+
+### **1. Scene Composition**
+
+#### **Alphabet Character**
+- Positioned on the left side of the view (`alphabetMesh.position.set(-3, -1, 0)`).  
+✔️ **Meets the criteria.**
+
+#### **Digit**
+- Positioned on the right side of the view (`digitMesh.position.set(3, -1, 0)`).  
+✔️ **Meets the criteria.**
+
+---
+
+### **2. Color Specification**
+
+#### **Alphabet Mesh**
+- Retains the ShaderMaterial with the updated favorite color (**#8dd8cc**).  
+✔️ **Meets the criteria.**
+
+#### **Digit Mesh**
+- Uses the complementary color (**#d89d8d**) for the ShaderMaterial.  
+✔️ **Meets the criteria.**
+
+---
+
+### **3. Central Cube (Light Source)**
+
+- The cube is located at `(0, 0, 0)` and emits a glowing white light effect via ShaderMaterial (`glowMaterial`).  
+- Enhanced glow effect through smoother pulsating light animation controlled by a sine wave.  
+✔️ **Meets the criteria.**
+
+---
+
+### **4. Shader Materials for Characters**
+
+#### **Alphabet ShaderMaterial**
+- **Ambient Intensity**:  
+   - Ambient intensity is now calculated and applied as `0.abc`, where `abc = (last three digits of student ID) + 200`. For example, if `abc = 361`, ambient intensity is `0.361`.  
+   ✔️ **Meets the criteria.**
+
+- **Diffuse and Specular (Plastic)**:  
+   - Blinn-Phong shading for the alphabet material has been enhanced with balanced diffuse and specular highlights for a realistic plastic-like effect.  
+   ✔️ **Fully refined.**
+
+#### **Digit ShaderMaterial**
+- **Ambient Intensity**:  
+   - Ambient intensity matches the alphabet material at `0.361`.  
+   ✔️ **Meets the criteria.**
+
+- **Diffuse and Specular (Metal)**:  
+   - Improved metallic specular reflections with sharper highlights and increased shininess. The specular color is now closely tied to the base color for a more realistic metallic look.  
+   ✔️ **Fully refined.**
+
+---
+
+### **5. Globe Improvement (NEW)**
+
+- **Added a Rotating Globe**  
+   - A rotating globe has been added to the center of the scene, below the glowing cube.  
+   - Uses a `SphereGeometry` and dynamic ShaderMaterial to display a simulated Earth texture.  
+   - Incorporates ambient occlusion and specular highlights to enhance realism.  
+✔️ **Implemented successfully.**
+
+- **Interactive Features**:  
+   - The globe rotates automatically along the Y-axis.  
+   - Clicking on the globe toggles between day and night modes, dynamically updating textures and lighting.  
+✔️ **Fully interactive.**
+
+---
+
+### **6. Interactivity**
+
+#### **Cube Movement**
+- **W/S** keys successfully move the cube upward and downward along the Y-axis.  
+✔️ **Meets the criteria.**
+
+#### **Camera Movement**
+- **A/D** keys move the camera left and right linearly without orbiting.  
+- Added **R/F** keys for vertical camera movement along the Y-axis.  
+✔️ **Meets the criteria.**
+
+#### **Globe Interaction (NEW)**  
+- Clicking on the globe toggles day/night mode and changes its material dynamically.  
+✔️ **New functionality added.**
+
+---
+
+### **7. Other Improvements**
+
+1. **Dynamic Resizing**  
+   - Canvas adjusts seamlessly to browser window resizing, preserving the aspect ratio and maintaining object proportions.  
+
+2. **Enhanced Glow Effect**  
+   - Central cube glow now updates dynamically using a time-based sine function for smoother transitions.
+
+3. **Commented Shader Code**  
+   - Detailed comments in vertex and fragment shaders to facilitate understanding and customization.
+
+4. **Organized Animation Loop**  
+   - `animate` function now updates objects in a modular manner, ensuring scalability and easier debugging.
+
+5. **Real-Time Debugging Tools**  
+   - Added overlays for monitoring light position, ambient intensity, and other shader parameters.  
+
+6. **Optimized Shader Performance**  
+   - Reduced redundant computations in shaders, improving frame rates and rendering efficiency.
+
+---
+
+### **Summary**
+
+| Feature                           | Status                |
+|-----------------------------------|-----------------------|
+| **Scene Composition**             | ✔️ Fully Implemented   |
+| **Color Specification**           | ✔️ Fully Implemented   |
+| **Central Cube (Light Source)**   | ✔️ Fully Implemented   |
+| **Shader Materials for Characters** | ✔️ Fully Refined       |
+| **Globe Improvement**             | ✔️ Fully Implemented   |
+| **Interactivity**                 | ✔️ Fully Refined       |
+
+---
+
+### **Notable Changes Introduced in 2.0.0**
+
+1. **Rotating Globe**  
+   - A visually realistic, interactive globe with dynamic day/night mode.
+
+2. **Improved Shading Models**  
+   - Enhanced plastic-like and metallic specular highlights for better realism.
+
+3. **Pulsating Glow Effect**  
+   - Central cube glow transitions smoothly using time-based shaders.
+
+4. **Interactive Camera Movement**  
+   - Vertical camera movement added with **R/F** keys.
+
+5. **Optimized Codebase**  
+   - Modularized code for shaders, interactivity, and rendering.
+
+---
+
+This patch represents a significant leap forward in visual quality, interactivity, and performance. Future updates will focus on additional interactivity and expanded shader functionality.
+
+The result: https://drive.google.com/drive/folders/12pGE8sRI-xDBs-dlEpwuj8RPLKXE3ANT?usp=sharing
+

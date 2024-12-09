@@ -19,19 +19,17 @@
 		const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
 		renderer.setSize(window.innerWidth, window.innerHeight);
 
-		// Load font and create text meshes
+		
 		const fontLoader = new FontLoader();
 		fontLoader.load(
 			"https://threejs.org/examples/fonts/gentilis_regular.typeface.json",
 			(font) => {
-				// Metal-like Shader for the Alphabet: Reflective (swapped)
-				// Metal-like Shader for the Digit: Reflective (updated)
-				// Reflective light dispersing for the Digit: Reflective with light spread
+				
 				const createMetalMaterial = (baseColor) =>
 					new THREE.ShaderMaterial({
 						uniforms: {
 							cubePosition: { value: new THREE.Vector3(0, 0, 0) },
-							ambientIntensity: { value: 0.361 },
+							ambientIntensity: { value: 0.361 }, // 200+161=361
 							lightPosition: {
 								value: new THREE.Vector3(0, 0, 0),
 							},
@@ -42,42 +40,42 @@
             varying vec3 vPosition;
             void main() {
                 vPosition = (modelMatrix * vec4(position, 1.0)).xyz;
-                vNormal = normalize(normalMatrix * normal); // Normalize the normals
+                vNormal = normalize(normalMatrix * normal); 
                 gl_Position = projectionMatrix * viewMatrix * vec4(vPosition, 1.0);
             }
         `,
 						fragmentShader: `
-  uniform vec3 cubePosition;
-  uniform float ambientIntensity;
-  uniform vec3 lightPosition;
-  uniform vec3 viewPosition;
-  varying vec3 vNormal;
-  varying vec3 vPosition;
+			uniform vec3 cubePosition;
+			uniform float ambientIntensity;
+			uniform vec3 lightPosition;
+			uniform vec3 viewPosition;
+			varying vec3 vNormal;
+			varying vec3 vPosition;
 
-  void main() {
-      vec3 lightDir = normalize(lightPosition - vPosition);
-      vec3 viewDir = normalize(viewPosition - vPosition);
-      vec3 reflectDir = reflect(-lightDir, normalize(vNormal));
+			void main() {
+				vec3 lightDir = normalize(lightPosition - vPosition);
+				vec3 viewDir = normalize(viewPosition - vPosition);
+				vec3 reflectDir = reflect(-lightDir, normalize(vNormal));
 
-      vec3 ambient = vec3(${baseColor}) * ambientIntensity;
+				vec3 ambient = vec3(${baseColor}) * ambientIntensity;
 
-      float distance = length(cubePosition - vPosition);
-      float attenuation = 1.0 / (distance * distance + 1.0);
-      attenuation *= 1.5;
-      float diff = max(dot(normalize(vNormal), lightDir), 0.0);
-      vec3 diffuse = diff * vec3(${baseColor}) * attenuation;
+				float distance = length(cubePosition - vPosition);
+				float attenuation = 1.0 / (distance * distance + 1.0);
+				attenuation *= 1.5;
+				float diff = max(dot(normalize(vNormal), lightDir), 0.0);
+				vec3 diffuse = diff * vec3(${baseColor}) * attenuation;
 
-      float shininess = 50.0;
-      float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
-      vec3 specular = vec3(1.0) * spec * attenuation;
+				float shininess = 50.0;
+				float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+				vec3 specular = vec3(1.0) * spec * attenuation;
 
-      vec3 color = ambient + diffuse + specular;
-      gl_FragColor = vec4(color, 1.0);
-  }
-`,
+				vec3 color = ambient + diffuse + specular;
+				gl_FragColor = vec4(color, 1.0);
+			}
+			`,
 					});
 
-				// Plastic-like Shader for the Digit: Lustrous (swapped)
+			
 				const createPlasticMaterial = (baseColor) =>
 					new THREE.ShaderMaterial({
 						uniforms: {
@@ -93,36 +91,36 @@
 							varying vec3 vPosition;
 							void main() {
 								vPosition = (modelMatrix * vec4(position, 1.0)).xyz;
-								vNormal = normalize(normalMatrix * normal); // Normalize the normals
+								vNormal = normalize(normalMatrix * normal); 
 								gl_Position = projectionMatrix * viewMatrix * vec4(vPosition, 1.0);
 							}
 						`,
 						fragmentShader: `
-  uniform vec3 cubePosition;
-  uniform float ambientIntensity;
-  uniform vec3 lightPosition;
-  uniform vec3 viewPosition;
-  varying vec3 vNormal;
-  varying vec3 vPosition;
+						uniform vec3 cubePosition;
+						uniform float ambientIntensity;
+						uniform vec3 lightPosition;
+						uniform vec3 viewPosition;
+						varying vec3 vNormal;
+						varying vec3 vPosition;
 
-  void main() {
-      float ambient = 0.200 * ambientIntensity;
+						void main() {
+							float ambient = 0.200 * ambientIntensity;
 
-      vec3 lightDir = normalize(lightPosition - vPosition);
-      float distance = length(lightPosition - vPosition);
-      float attenuation = 1.0 / (distance * distance + 1.0);
-      float diffuse = max(dot(vNormal, lightDir), 0.0) * attenuation;
+							vec3 lightDir = normalize(lightPosition - vPosition);
+							float distance = length(lightPosition - vPosition);
+							float attenuation = 1.0 / (distance * distance + 1.0);
+							float diffuse = max(dot(vNormal, lightDir), 0.0) * attenuation;
 
-      vec3 viewDir = normalize(viewPosition - vPosition);
-      vec3 reflectDir = reflect(-lightDir, vNormal);
-      float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64.0);
-      float specular = spec * attenuation;
+							vec3 viewDir = normalize(viewPosition - vPosition);
+							vec3 reflectDir = reflect(-lightDir, vNormal);
+							float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64.0);
+							float specular = spec * attenuation;
 
-      vec3 color = vec3(${baseColor});
-      vec3 totalColor = color * (ambient + diffuse) + vec3(1.0) * specular;
-      gl_FragColor = vec4(totalColor, 1.0);
-  }
-`,
+							vec3 color = vec3(${baseColor});
+							vec3 totalColor = color * (ambient + diffuse) + vec3(1.0) * specular;
+							gl_FragColor = vec4(totalColor, 1.0);
+						}
+						`,
 					});
 
 				const alphabetMaterial =
@@ -136,7 +134,7 @@
 					alphabetGeometry,
 					alphabetMaterial,
 				);
-				alphabetMesh.position.set(-3, -1, 0); // Left side
+				alphabetMesh.position.set(-3, -1, 0); 
 				scene.add(alphabetMesh);
 
 				const digitMaterial = createMetalMaterial(
@@ -148,7 +146,7 @@
 					height: 0.2,
 				});
 				const digitMesh = new THREE.Mesh(digitGeometry, digitMaterial);
-				digitMesh.position.set(1, -1, 0); // Right side
+				digitMesh.position.set(1, -1, 0); 
 				scene.add(digitMesh);
 
 				renderLoopMaterials.push(() => {
@@ -168,7 +166,7 @@
 			},
 		);
 
-		const cubeGeometry = new THREE.BoxGeometry(0.3, 0.3, 0.1);
+		const cubeGeometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
 		const glowMaterial = new THREE.ShaderMaterial({
 			uniforms: {
 				time: { value: 0.0 },
@@ -198,43 +196,56 @@
 		const handleKeyDown = (event) => {
 			switch (event.key) {
 				case "w":
-					cube.position.y += 0.1; // Move cube up
+					cube.position.y += 0.1; 
 					break;
 				case "s":
-					cube.position.y -= 0.1; // Move cube down
+					cube.position.y -= 0.1; 
 					break;
 				case "q":
-					cube.position.x -= 0.1; // Move cube left
+					cube.position.x -= 0.1; 
 					break;
 				case "e":
-					cube.position.x += 0.1; // Move cube right
+					cube.position.x += 0.1; 
 					break;
 				case "t":
-					cube.position.z += 0.1; // Move cube forward (Z-axis)
+					cube.position.z += 0.1; 
 					break;
 				case "g":
-					cube.position.z -= 0.1; // Move cube backward (Z-axis)
+					cube.position.z -= 0.1; 
 					break;
 				case "a":
-					camera.position.x += 0.1; // Move camera left
+					camera.position.x += 0.1; 
 					break;
 				case "d":
-					camera.position.x -= 0.1; // Move camera right
+					camera.position.x -= 0.1; 
 					break;
 				case "r":
-					camera.position.y -= 0.1; // Move camera up
+					camera.position.y -= 0.1; 
 					break;
 				case "f":
-					camera.position.y += 0.1; // Move camera down
+					camera.position.y += 0.1; 
 					break;
 				case "y":
-					camera.position.z += 0.1; // Move camera forward (Z-axis)
+					camera.position.z += 0.1; 
 					break;
 				case "h":
-					camera.position.z -= 0.1; // Move camera backward (Z-axis)
+					camera.position.z -= 0.1; 
+					break;
+				case "ArrowUp":
+					scene.rotation.x -= 0.1; 
+					break;
+				case "ArrowDown":
+					scene.rotation.x += 0.1; 
+					break;
+				case "ArrowLeft":
+					scene.rotation.y -= 0.1; 
+					break;
+				case "ArrowRight":
+					scene.rotation.y += 0.1; 
 					break;
 			}
 		};
+
 		window.addEventListener("keydown", handleKeyDown);
 
 		function animate() {
