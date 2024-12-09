@@ -118,8 +118,6 @@ To determine if your code meets the criteria, let's break it down step by step:
 ---
 
 *This progress note is made by GPT-4.o.*
-<<<<<<< HEAD
-=======
 
 ---
 
